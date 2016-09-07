@@ -34,6 +34,7 @@ import javax.swing.ScrollPaneConstants;
 public class TextEditor extends JFrame implements MouseListener {
 	private  JTextArea area = new JTextArea();
 	private JFileChooser dialog = new JFileChooser(System.getProperty("user.dir"));
+	private JFileChooser savedialog = new JFileChooser(System.getProperty("user.dir"));
 	//JPanel middlePanel = new JPanel ();
 	Color whiteColor = new Color(255, 255, 255);
 	JScrollPane scrollPane = new JScrollPane(area);
@@ -45,6 +46,7 @@ public class TextEditor extends JFrame implements MouseListener {
 	JTextField height = new JTextField();
 	Container contentPane = new Container();
 	String fileName = " ";
+	boolean newFile = true;
 
 	private String currentFile = "Untitled";
 	private boolean changed = false;
@@ -59,6 +61,7 @@ public class TextEditor extends JFrame implements MouseListener {
 	menuBar.add(edit);
     toolBar.add(button);
     toolBar.addSeparator();
+    newFile = true;
     
     toolBar.add(new JButton("button 2"));
     
@@ -123,14 +126,15 @@ public class TextEditor extends JFrame implements MouseListener {
 			if(area.getText().length() != 0 && changed == false){
 			// TODO Auto-generated method stub
 			    JDialog.setDefaultLookAndFeelDecorated(true);
-			    int response = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
+			    int response = JOptionPane.showConfirmDialog(null, "Would you like to save your current file?", "Confirm",
 			        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 			    if (response == JOptionPane.NO_OPTION) {
 			      area.setText("");
 			    } else if (response == JOptionPane.YES_OPTION) {
 			      writeFile();
 			    } 
-		}
+			}
+			newfile = true;
 		}
 	});
 	file.add(newFile);
@@ -142,6 +146,7 @@ public class TextEditor extends JFrame implements MouseListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			readFile();
+			newfile = false;
 		}
 	});
 	
@@ -189,6 +194,7 @@ public class TextEditor extends JFrame implements MouseListener {
                 BufferedReader br = new BufferedReader(reader);
                 area.read( br, null );
                 area.setLineWrap(true);
+                
                 br.close();
                 area.requestFocus();
             }
@@ -199,14 +205,47 @@ public class TextEditor extends JFrame implements MouseListener {
 	public void writeFile(){
 		 try
          {
+			 if(newfile = false){
              FileWriter writer = new FileWriter(fileName);
              BufferedWriter bw = new BufferedWriter( writer );
              area.write( bw );
              bw.close();
              changed = true;
              area.requestFocus();
+			 }
+			 else{
+				savingNewFile();
+			 }//closing else
          }
          catch(Exception e2) {}
+	}
+	
+	public void savingNewFile(){
+		JFileChooser fileChooser = new JFileChooser();
+        int returnValue = fileChooser.showOpenDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+	         return;
+	      }
+
+	      File fileName = new File(SaveAs.getSelectedFile() + ".txt");
+	      BufferedWriter outFile = null;
+	      try {
+	         outFile = new BufferedWriter(new FileWriter(fileName));
+
+	         area.write(outFile);   // *** here: ***
+
+	      } catch (IOException ex) {
+	         ex.printStackTrace();
+	      } finally {
+	         if (outFile != null) {
+	            try {
+	               outFile.close();
+	            } catch (IOException e) {
+	               // one of the few times that I think that it's OK
+	               // to leave this blank
+	            }
+	         }
+	      }
 	}
 	 
 	public void cut(){
